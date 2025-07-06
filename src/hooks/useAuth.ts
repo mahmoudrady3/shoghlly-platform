@@ -69,17 +69,22 @@ export const useAuth = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, userData: {
-    full_name: string;
-    role: 'client' | 'freelancer';
-    skills?: string[];
-    phone?: string;
-  }) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    userData: {
+      full_name: string;
+      role: 'client' | 'freelancer';
+      skills?: string[];
+      phone?: string;
+    }
+  ) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: 'https://shoghlly-platform.vercel.app/',
           data: {
             full_name: userData.full_name,
             role: userData.role,
@@ -89,7 +94,6 @@ export const useAuth = () => {
 
       if (error) throw error;
 
-      // ✅ لو Supabase طالبة تأكيد الإيميل، data.user بيكون null
       if (!data.user) {
         return {
           success: true,
@@ -97,7 +101,6 @@ export const useAuth = () => {
         };
       }
 
-      // ✅ إنشاء البروفايل بعد نجاح التسجيل
       const { error: profileError } = await supabase.from('profiles').insert({
         id: data.user.id,
         email,
@@ -111,7 +114,7 @@ export const useAuth = () => {
 
       return { success: true, message: 'تم إنشاء الحساب بنجاح!' };
     } catch (error: any) {
-      console.error('SignUp Error:', error); // ✅ نطبع الخطأ في الكونسول
+      console.error('SignUp Error:', error);
       return {
         success: false,
         error: error?.message || 'حدث خطأ أثناء إنشاء الحساب. حاول مرة أخرى.',
